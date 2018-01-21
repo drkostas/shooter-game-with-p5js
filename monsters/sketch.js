@@ -53,6 +53,10 @@ function mousePressed(){
 	pl.shoot();
 }
 
+function keyPressed(){
+	console.log(12);
+	pl.shoot();
+}
 function spawnMonster(){
 	numOfMonsters = map(lap, 0, 20, 1, 12);
 	speed = map(lap, 0, 20, 4, 10);

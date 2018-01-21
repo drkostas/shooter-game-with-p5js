@@ -2,6 +2,14 @@
 <html>
   <head>
     <meta name="viewport" width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0>
+    <style type="text/css">
+    	body{
+    		background: #e8dddc;
+    	}
+    	h1, h2 {
+		    display: inline;
+		}
+    </style>
     <script src="../p5.min.js"></script>
     <script src="../addons/p5.dom.min.js"></script>
     <script src="../addons/p5.sound.min.js"></script>
@@ -11,9 +19,15 @@
     <script src="sketch.js"></script>
   </head>
   <body>
-    <center>
-    	<h2> Monsters Killed: <b id="score" style="color:red">0</b></h2>
-    	<h3> Highscore: <b id="highscore" style="color: blue">0</b></h3>
-    </center>
+  	<div style="display:inline;width: 100%;height: 5%;"> 
+	  	<div style="float: left;margin-left: 5%;color: forestgreen">
+	  		<h3>Move mouse Up and Down to aim.<br>Click mouse or any key to shoot.</h3>
+	  	</div>
+	  	<h2 style="display: inline-block;margin-left: 25%;color: dodgerblue">CASUAL SHOOTER</h2>
+	    <div style="float: right;margin-right: 5%;border-style: ridge;padding: 1px;">
+	    	<h2> Monsters Killed: <b id="score" style="color:red">0</b></h2>
+	    	<h3> Highscore: <b id="highscore" style="color: blue">0</b></h3>
+	    </div>
+	</div>
   </body>
 </html>
