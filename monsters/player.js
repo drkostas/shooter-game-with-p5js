@@ -58,8 +58,8 @@ class player {
 	}
 
 	show(y){
-		if (y>=823) {
-			y = 823;
+		if (y>=canvasY+23) {
+			y = canvasY+23;
 		}
 		else if (y<=33){
 			y = 33;

@@ -112,9 +112,9 @@ class monster {
 
 	vibrate(){
 		let movementX = random(-10, 5);
-		let movementY = random(-25*this.scale, 25*this.scale);
+		let movementY = random(-40*this.scale, 40*this.scale);
 		this.centerX += movementX;
-		if ((this.centerY + movementY<=800-50*this.scale) && (this.centerY + movementY>=50*this.scale)) {
+		if ((this.centerY + movementY<=canvasY-50*this.scale) && (this.centerY + movementY>=50*this.scale)) {
 			this.centerY += movementY;			
 		}
 		this.init(this.centerX, this.centerY);
