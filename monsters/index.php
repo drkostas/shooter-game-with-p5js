@@ -29,6 +29,9 @@
     <style type="text/css">
       body{
         background: #e8dddc;
+        width: 100%;
+        height: 100%;
+        margin: 0!important;
       }
       h1, h2 {
         display: inline;
@@ -174,13 +177,17 @@
         <?=$table;?>
       </div>
   </div>
-
+  <div style="position: absolute;bottom: 0;width: 100%;height:30px;background-color: #004080;">
+	  <div style="position: absolute;bottom: 0;right: 35px;padding: 5px;color: #6d6ddf">
+	  	Made by <span style="color: #91a8ee;">drkostas</span>. Source code on <a href="https://github.com/drkostas/shooter-game-with-p5js" target="_blank" style="color: #999">GitHub</a>
+	  </div>
+  </div>
 
   <div id="submitScore" class="modal">
     <div class="modal-content" >
       <div class="modal-header">
         <span class="close">&times;</span>
-        <center><h2>Submit Score?</h2></center>
+        <center><h2>Your score: <span id="scoreModal" style="color: red;margin-right: 10px"></span>  Submit?</h2></center>
       </div>
       <div class="modal-body">
         <center>
@@ -191,8 +198,8 @@
       </div>
       <div class="modal-footer">
         <center>
-          <button class="button" onclick="noSubmit();">NO</button>
           <button class="button" style="margin-right: 10px;" onclick="submitScore();">SUBMIT</button>
+          <button class="button" onclick="noSubmit();">NO</button>
         </center>
       </div>
     </div>

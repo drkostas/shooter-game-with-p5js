@@ -52,6 +52,7 @@ function draw(){
 	writeScore();
 	if(crashed){
 		highScore = score;
+		$('#scoreModal').html(highScore);
 		modal.style.display = "block";
 		reset();
 		setTimeout(
