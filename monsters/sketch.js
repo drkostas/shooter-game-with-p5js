@@ -61,9 +61,9 @@ function draw(){
 					    }, 1000);
 		}
 }
-function mousePressed(){
-	pl.shoot();
-}
+// function mousePressed(){
+// 	pl.shoot();
+// }
 
 function pauseGame(){
 	song.pause();

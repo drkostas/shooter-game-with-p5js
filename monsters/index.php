@@ -167,7 +167,7 @@
     </center>
     <div style="display:inline;width: 100%;height: 250px;top: 10px;position: absolute;"> 
       <div style="float: left;margin-left: 5%;color: forestgreen">
-        <h3>Move Mouse to aim.<br>Left click or hit "s" to shoot<br>Press ESC to pause and resume.</h3>
+        <h3>Move Mouse to aim.<br>Ηit "s" to shoot.<br>Press ESC to pause and resume.</h3>
       </div>
       <div style="float: right;margin-right: 2%;border-style: ridge;padding: 1px;">
         <h2> Monsters Killed: <b id="score" style="color:red">0</b></h2>
@@ -179,7 +179,7 @@
   </div>
   <div style="position: absolute;bottom: 0;width: 100%;height:30px;background-color: #004080;">
 	  <div style="position: absolute;bottom: 0;right: 35px;padding: 5px;color: #6d6ddf">
-	  	Made by <span style="color: #91a8ee;">drkostas</span>. Source code on <a href="https://github.com/drkostas/shooter-game-with-p5js" target="_blank" style="color: #999">GitHub</a>
+	  	Made by <span style="color: #91a8ee;">drkostas</span>. Source code available on <a href="https://github.com/drkostas/shooter-game-with-p5js" target="_blank" style="color: #999">GitHub</a>
 	  </div>
   </div>
 
