@@ -54,7 +54,8 @@ class player {
 	}
 
 	shoot(){
-		Bullets.push(new bullet(this.bumperFrontX, this.gunY, this.gunHeight, this.scale, 10));
+		Bullets.push(new bullet(this.bumperFrontX, this.gunY, this.gunHeight, this.scale, 5/scl));
+		// console.log("bullet speed: ", 5/scl);
 	}
 
 	show(y){

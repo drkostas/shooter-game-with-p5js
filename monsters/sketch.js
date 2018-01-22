@@ -1,18 +1,20 @@
-var canvasX = 1928;
-var canvasY = 800;
+var canvasX;
+var canvasY;
 var bg;
-let scroll = 0; 
 var song;
 var death;
 var startTime;
 var lap;
 var speed;
+var scl;
+var pl;
+var highScore;
+var scroll = 0; 
+var paused = false;
 var prevSec = -1;
-var scl = 0.4;
 var winningX = 0;
 var score = 0;
-var pl = new player(canvasX-30, canvasY/2, 1);
-var Bullets = new Array;
+var Bullets = new Array();
 var Monsters =  new Array();
 
 function preload() {
@@ -23,8 +25,11 @@ function preload() {
 
 function setup() {
 	centerCanvas();
+	noCursor();
 	song.loop();
-	spawnMonster();
+	frameRate(40);
+	pl = new player(canvasX-30, canvasY/2, 1);
+	// spawnMonster();
 	startTime = performance.now();
 	lap = 1;
 }
@@ -37,59 +42,104 @@ function draw(){
 	moveBackground();
 	// Calculate lap number
 	if (Math.abs(lap*5-seconds)==0 && seconds!=prevSec){
-		spawnMonster(lap);
+		spawnMonster();
 		lap += 1;
 		prevSec = seconds;
 	}
 	pl.show(mouseY); // Show Player
 	checkKilled(); // Checks the monsters that each bullet shot
 	crashed = moveMonsters(crashed); // Moves monsters and checks the distance of the closest to the edge
-	if(crashed){
-		reset();
-	}
 	writeScore();
+	if(crashed){
+		highScore = score;
+		modal.style.display = "block";
+		reset();
+		setTimeout(
+		    function() {
+					      pauseGame();
+					    }, 1000);
+		}
 }
 function mousePressed(){
 	pl.shoot();
 }
 
-function keyPressed(){
-	console.log(12);
-	pl.shoot();
+function pauseGame(){
+	song.pause();
+	noLoop();
+	paused = true;
 }
+
+function resumeGame(){
+	song.play();
+	startTime = performance.now() - seconds*1000;
+	loop();
+	paused = false;
+}
+
+function keyPressed(){
+	
+	if (keyCode==ESCAPE){
+		if (paused){
+			resumeGame();			
+		}
+		else{
+			pauseGame();					
+		}
+	}
+	else if (keyCode==83){
+		pl.shoot();		
+	}
+}
+
+
+
+
 function spawnMonster(){
-	numOfMonsters = map(lap, 0, 20, 1, 12);
-	speed = map(lap, 0, 20, 4, 10);
+	numOfMonsters = map(lap, 0, 20, 1, 20);
+	speed = map(lap, -1, 20, 4*1900/windowWidth, 12*1900/windowWidth);
+	if (!isNaN(speed)){
+		speedToShow = Math.round((speed - 4*1900/windowWidth)*10)/10;		
+	}
+	else{
+		speedToShow = 1;
+	}
+	document.getElementById("speed").innerHTML = speedToShow;
+	// console.log("monster speed: ", speed);
 	for (var i = 0; i < numOfMonsters; i++) {
 		Monsters.push(new monster(0, random(50,canvasY-50), scl, speed));
 	}
 }
 
 function reset(){
-	song.stop();
+	song.stop();	
+	scroll = 0; 
+	paused = false;
 	prevSec = -1;
-	scl = 0.3;
 	winningX = 0;
-	updateHighscore();
 	score = 0;
-	pl = new player(canvasX-30, canvasY/2, 1);
-	Bullets = new Array;
+	document.getElementById("speed").innerHTML = 1;
+	Bullets = new Array();
 	Monsters =  new Array();
 	setup();
 }
 
-function updateHighscore(){
-	let hs = document.getElementById("highscore").innerHTML;
-	if (hs<score){
-		document.getElementById("highscore").innerHTML = score;
-	}
-}
+// function updateHighscore(){
+// 	let hs = document.getElementById("highscore").innerHTML;
+// 	if (hs<score){
+// 		document.getElementById("highscore").innerHTML = score;
+// 	}
+// }
 
 function writeScore(){
 	document.getElementById("score").innerHTML = score;
 }
 
 function centerCanvas(){
+	canvasX = windowWidth-100;
+	canvasY = windowHeight-250;
+	scl = windowWidth * 0.4/1900;
+	// console.log(scl);
 	let cnv = createCanvas(canvasX, canvasY);
 	let x = (windowWidth - width) / 2;
 	let y = (windowHeight - height) / 2;
@@ -99,10 +149,12 @@ function centerCanvas(){
 
 function moveBackground(){
 	background(0);
-	speed = map(lap, 0, 20, 4, 10);
+	speed = Math.round(map(lap, 0, 20, 4*1900/windowWidth, 12*1900/windowWidth)*10)/10;
+	// console.log("BACKGROUND", speed);
 	image(bg, scroll, 0);
   	image(bg, scroll-bg.width, 0);
-	scroll = scroll + speed*scl;
+	scroll = scroll + speed;
+	// console.log("background speed: ", speed-(5*scl));
 	if (scroll>bg.width) {
 		scroll=0;		
 	}

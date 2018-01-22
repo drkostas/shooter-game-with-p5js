@@ -98,7 +98,7 @@ class monster {
 
 	walk(canvasLength){
 		let touched = "no";
-		this.init(this.centerX + speed, this.centerY);
+		this.init(this.centerX + this.speed, this.centerY);
 		let right = this.getRightSide();
 		let left = this.getLeftSide();
 		if (right > canvasLength) {
@@ -111,8 +111,8 @@ class monster {
 	}
 
 	vibrate(){
-		let movementX = random(-10, 5);
-		let movementY = random(-40*this.scale, 40*this.scale);
+		let movementX = random(-25*scl, 30*scl);
+		let movementY = random(-25*this.scale, 25*this.scale);
 		this.centerX += movementX;
 		if ((this.centerY + movementY<=canvasY-50*this.scale) && (this.centerY + movementY>=50*this.scale)) {
 			this.centerY += movementY;			
