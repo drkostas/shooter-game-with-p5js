@@ -135,7 +135,7 @@ class monster {
 		ellipse(this.mouthX, this.mouthY, this.radXmouth, this.radYmouth); // mouth
 		fill(255,164,99, 255);
 	  	rect(this.handX,this.handY, this.radXhand, this.radYhand, 90); // hands
-	  	fill(3, 119, 145, 255);
+	  	fill(map(lap,0, 20, 14, 254), map(lap,0, 20, 119, 0), map(lap,0, 20, 145, 0), 255);
 	  	triangle(this.bodyX1,this.bodyY1,this.bodyX2,this.bodyY2,this.bodyX3,this.bodyY3); // body
 	  	// fill(50, 50, 50, 70);
 	  	// quad(this.getLeftSide(),this.getTopSide(),this.getLeftSide(),this.getBottomSide(),this.getRightSide(),this.getBottomSide(),this.getRightSide(),this.getTopSide());

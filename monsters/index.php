@@ -191,8 +191,8 @@
       </div>
       <div class="modal-footer">
         <center>
-          <button class="button" style="margin-right: 10px;" onclick="submitScore();">SUBMIT</button>
           <button class="button" onclick="noSubmit();">NO</button>
+          <button class="button" style="margin-right: 10px;" onclick="submitScore();">SUBMIT</button>
         </center>
       </div>
     </div>
@@ -209,6 +209,7 @@
     // When the user clicks on <span> (x), close the modal
     span.onclick = function() {
         modal.style.display = "none";
+        resumeGame();
     }
 
     function submitScore(){
