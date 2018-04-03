@@ -18,22 +18,25 @@ var Bullets = new Array();
 var Monsters =  new Array();
 
 function preload() {
-  	bg = loadImage("assets/sky.jpg");
-	song = loadSound("assets/theme.mp3");
-	death = loadSound("assets/death.mp3");
+  	bg = loadImage("assets/sky.jpg");	
 }
 
 function setup() {
 	centerCanvas();
-	noCursor();
-	song.loop();
+	noCursor();	
+	death = loadSound("assets/death.mp3");	
+	death.setVolume(0.4);
 	frameRate(40);
 	pl = new player(canvasX-30, canvasY/2, 1);
 	// spawnMonster();
 	startTime = performance.now();
 	lap = 1;
+	song = loadSound("assets/theme.mp3", themeSongLoaded);
 }
 
+function themeSongLoaded() {
+	song.loop();
+}
 
 function draw(){
 	// background(map(winningX, 0, canvasX, 100, 254), map(winningX, 0, canvasX, 254, 50), map(winningX, 0, canvasX, 190, 50));
