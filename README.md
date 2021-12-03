@@ -1,4 +1,4 @@
-# Demo: http://tokru.byethost6.com/games/monsters/
+# Demo: http://shooter-game.gkos.tech
 
 This is a simple 2d shooter game written on JavaScript and the p5.js library. 
 Inpsired by the classic game "Space Invaders".
