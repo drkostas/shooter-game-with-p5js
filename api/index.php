@@ -284,7 +284,7 @@
     function submitScore(){
       let name = $('#playerName').val();
       $.ajax({
-        url:"api/submit_score.php",
+        url:"api/submit_score",
         type:"POST",
         data:({
                 name: name,
