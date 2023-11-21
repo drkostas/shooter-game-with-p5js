@@ -1,24 +1,78 @@
 <?php
-  $server = 'mysql:dbname=XXX;host=XXX';
-  $user = 'XXX';
-  $password = 'XXX';
-  $table = "<table style='border-style: ridge;padding: 1px;''>
-                <tr>
-                    <th>Name</td>
-                    <th>Monsters Killed</td>
-                </tr>";
-  try {
-      $pdo = new PDO($server, $user, $password);  
-      $slct = $pdo->prepare("SELECT * FROM highscores ORDER BY score DESC LIMIT 5");
-      $slct->execute();
-      $scores = $slct->fetchAll();      
-      foreach ($scores as $score) {
-        $table .= "<tr>
-                      <td>".$score['name']."</td>
-                      <td>".$score['score']."</td>
-                  </tr>";
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ALL);
+  setcookie('key', 'value', ['samesite' => 'None', 'secure' => true]);
+  // Load Env Variables
+  if (file_exists(__DIR__ . '/../.env')) {
+      $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+      foreach ($lines as $line) {
+          if (strpos(trim($line), '#') === 0) continue;
+          list($name, $value) = explode('=', $line, 2);
+          $_ENV[$name] = $value;
+          putenv("$name=$value");
       }
+  }
+
+  $host = getenv('DB_HOST');
+  $user = getenv('DB_USER');
+  $password = getenv('DB_PASSWORD');
+  $db_name = getenv('DB_NAME');
+  $db_name_statistics = getenv('DB_NAME_STATISTICS');
+  $tracking_page_name = getenv('TRACKING_PAGE_NAME');
+  $game_server = 'mysql:dbname=' . $db_name . ';host=' . $host;
+  $stats_server = 'mysql:dbname=' . $db_name_statistics . ';host=' . $host;
+
+  // Connect to db
+  try {
+      $pdo = new PDO($game_server, $user, $password);
   } catch (PDOException $e) {
+      echo 'Connection failed. Please try again later.';
+      exit; // Exit to avoid further script execution on connection failure
+  }
+
+  try {
+      $pdo_statistics = new PDO($stats_server, $user, $password);
+  } catch (PDOException $e) {
+      echo 'Connection failed. Please try again later.';
+      exit; // Exit to avoid further script execution on connection failure
+  }
+
+  // Info about the visitor
+  if(isset($_SERVER['HTTP_REFERER'])) 
+  {
+    $ref=$_SERVER['HTTP_REFERER'];
+  }
+  else
+  {
+    $ref= "Unknown";
+  }
+  $agent=$_SERVER['HTTP_USER_AGENT'];
+  $ip=$_SERVER['REMOTE_ADDR'];
+  $domain = gethostbyaddr($_SERVER['REMOTE_ADDR']);
+  $vstr = $pdo_statistics->prepare("INSERT INTO tracking_info(tm, ref, agent, ip, tracking_page_name, domain)  VALUES(curdate(), :ref, :agent, :ip, :tracking_page_name, :domain)");
+  $vstr->execute(array(':ref'=>$ref, ':agent'=>$agent, ':ip'=>$ip, ':tracking_page_name'=>$tracking_page_name, ':domain'=>$domain));
+
+  if (!$vstr) {
+    echo "\nPDO::errorInfo():\n";
+    print_r($pdo_statistics->errorInfo());
+  }
+  
+  // Create highscores table
+  $slct = $pdo->prepare("SELECT * from (SELECT * from highscores order by score desc) x group by name order by score desc LIMIT 5");
+  $slct->execute();
+  $scores = $slct->fetchAll();
+
+  $table = "<table style='border-style: ridge;padding: 1px;''>
+            <tr>
+                <th>Name</td>
+                <th>Monsters Killed</td>
+            </tr>";
+  foreach ($scores as $score) {
+    $table .= "<tr>
+                  <td>".$score['name']."</td>
+                  <td>".$score['score']."</td>
+              </tr>";
   }
   $table .= "</table>";  
 ?>
@@ -151,43 +205,50 @@
     <script
       src="https://code.jquery.com/jquery-3.3.1.min.js"
       integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-      crossorigin="anonymous"></script>
-    <script src="./addons/p5.min.js"></script>
-    <script src="./addons/p5.dom.min.js"></script>
-    <script src="./addons/p5.sound.min.js"></script>
-    <script src="monster.js"></script>
-    <script src="player.js"></script>
-    <script src="bullet.js"></script>
-    <script src="sketch.js"></script>
+      crossorigin="anonymous">
+    </script>
+<script src="addons/p5.min.js"></script>
+<script src="addons/p5.dom.min.js"></script>
+<script src="addons/p5.sound.min.js"></script>
+<script src="monster.js"></script>
+<script src="player.js"></script>
+<script src="bullet.js"></script>
+<script src="sketch.js"></script>
+
+
+
   </head>
   <body>
     <center>
-      <h2 style="display: inline-block;color: dodgerblue">CASUAL SHOOTER</h2><br>
+      <h2 style="display: inline-block;color: dodgerblue">RETRO SHOOTER</h2><br>
       <b>Speed: </b> <b id="speed" style="color: red">1</b> 
     </center>
     <div style="display:inline;width: 100%;height: 250px;top: 10px;position: absolute;"> 
       <div style="float: left;margin-left: 5%;color: forestgreen">
-        <h3>Move Mouse to aim.<br>Ηit "s" to shoot.<br>Press ESC to pause and resume.</h3>
+        <h3>Move Mouse to aim.<br>Hit "s" to shoot.<br>Press ESC to pause and resume.</h3>
       </div>
       <div style="float: right;margin-right: 2%;border-style: ridge;padding: 1px;">
         <h2> Monsters Killed: <b id="score" style="color:red">0</b></h2>
       </div>
       <div style="float: right;margin-right: 5%;">
-        <b>Top 5 Highscores</b>
+        <b>Leaderboard</b>
         <?=$table;?>
       </div>
   </div>
   <div style="position: absolute;bottom: 0;width: 100%;height:30px;background-color: #004080;">
-	  <div style="position: absolute;bottom: 0;right: 35px;padding: 5px;color: #6d6ddf">
-	  	Made by <span style="color: #91a8ee;">drkostas</span>. Source code available on <a href="https://github.com/drkostas/shooter-game-with-p5js" target="_blank" style="color: #999">GitHub</a>
-	  </div>
+    <div style="position: absolute;bottom: 0;right: 35px;padding: 5px;color: #6d6ddf">
+      Made by <span style="color: #91a8ee;">drkostas</span>. Source code available on <a href="https://github.com/drkostas/shooter-game-with-p5js" target="_blank" style="color: #999">GitHub</a>
+    </div>
   </div>
 
   <div id="submitScore" class="modal">
     <div class="modal-content" >
       <div class="modal-header">
         <span class="close">&times;</span>
-        <center><h2>Your score: <span id="scoreModal" style="color: red;margin-right: 10px"></span>  Submit?</h2></center>
+        <center>
+          <h2>Your score: <span id="scoreModal" style="color: red;margin-right: 10px"></span>  Submit?</h2><br>
+          <b style="color:rgba(255, 0, 0, 0.7);font-size: 12px;">(You will see your score after refreshing the page)</b>
+          </center>
       </div>
       <div class="modal-body">
         <center>
@@ -198,8 +259,8 @@
       </div>
       <div class="modal-footer">
         <center>
-          <button class="button" style="margin-right: 10px;" onclick="submitScore();">SUBMIT</button>
-          <button class="button" onclick="noSubmit();">NO</button>
+          <button class="button" style="background: rgb(173, 12, 12);width: 83px;" onclick="noSubmit();">NO</button>
+          <button class="button" style="background:rgb(41, 173, 11);margin-right: 30px;width: 83px;" onclick="submitScore();">SUBMIT</button>
         </center>
       </div>
     </div>
@@ -222,14 +283,15 @@
     function submitScore(){
       let name = $('#playerName').val();
       $.ajax({
-        url:"submitScore.php",
+        url:"api/submit_score.php",
         type:"POST",
         data:({
                 name: name,
                 score: highScore
               }),
         success: function(data) {
-          location.reload();
+          modal.style.display = "none";
+          resumeGame();
           }
       });
     }

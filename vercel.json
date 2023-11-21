@@ -5,7 +5,8 @@
       }
     },
     "routes": [
-      { "src": "/api/submitScore", "dest": "/api/submitScore.php" },
+      { "src": "/api/submit_score", "dest": "/api/submit_score.php" },
+      { "src": "/api/create_table_track", "dest": "/api/create_table_track.php" },
       { "src": "/api/(.*)", "dest": "/api/index.php" },
       { "src": "/", "dest": "/api/index.php" },
       { "src": "/(.*)", "dest": "/$1" }
