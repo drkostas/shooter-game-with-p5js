@@ -1,7 +1,7 @@
 <?php
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ALL);
+  // ini_set('display_errors', 1);
+  // ini_set('display_startup_errors', 1);
+  // error_reporting(E_ALL);
   setcookie('key', 'value', ['samesite' => 'None', 'secure' => true]);
   // Load Env Variables
   if (file_exists(__DIR__ . '/../.env')) {
@@ -207,13 +207,14 @@
       integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
       crossorigin="anonymous">
     </script>
-<script src="addons/p5.min.js"></script>
-<script src="addons/p5.dom.min.js"></script>
-<script src="addons/p5.sound.min.js"></script>
-<script src="monster.js"></script>
-<script src="player.js"></script>
-<script src="bullet.js"></script>
-<script src="sketch.js"></script>
+
+  <script src="addons/p5.min.js"></script>
+  <script src="addons/p5.dom.min.js"></script>
+  <script src="addons/p5.sound.min.js"></script>
+  <script src="js/monster.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/bullet.js"></script>
+  <script src="js/sketch.js"></script>
 
 
 
@@ -283,7 +284,7 @@
     function submitScore(){
       let name = $('#playerName').val();
       $.ajax({
-        url:"api/submit_score.php",
+        url:"submit_score.php",
         type:"POST",
         data:({
                 name: name,

@@ -16,7 +16,6 @@ var winningX = 0;
 var score = 0;
 var Bullets = new Array();
 var Monsters = new Array();
-let songReady = false;
 
 function preload() {
   bg = loadImage("assets/sky.jpg");
