@@ -161,7 +161,7 @@ function centerCanvas() {
 
 function moveBackground() {
   background(0);
-  speed =``
+	speed = Math.round(map(lap, 0, 20, 4*1900/windowWidth, 12*1900/windowWidth)*10)/10;
     Math.round(
       map(lap, 0, 20, (4 * 1900) / windowWidth, (12 * 1900) / windowWidth) * 10
     ) / 10;
