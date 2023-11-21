@@ -27,7 +27,7 @@ function setup() {
   centerCanvas();
   noCursor();
   death.setVolume(0.4);
-  frameRate(60);
+  frameRate(40);
   pl = new player(canvasX - 30, canvasY / 2, 1);
   startTime = performance.now();
   lap = 1;
