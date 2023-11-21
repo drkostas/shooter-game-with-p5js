@@ -1,7 +1,7 @@
 <?php
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ALL);
+//   ini_set('display_errors', 1);
+//   ini_set('display_startup_errors', 1);
+//   error_reporting(E_ALL);
 	// Load Env Variables
 	if (file_exists(__DIR__ . '/../.env')) {
 		$lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -35,7 +35,7 @@
 	$score = $_POST['score'] ?? 0;
 
 	// Validate and sanitize inputs
-	$name = filter_var($name, FILTER_SANITIZE_STRING);
+	$name = strip_tags($name); // or htmlspecialchars($name)
 	$score = filter_var($score, FILTER_VALIDATE_INT);
 
 	$insrt = $pdo->prepare("INSERT INTO highscores (name, score) VALUES (:nm, :scr)");
