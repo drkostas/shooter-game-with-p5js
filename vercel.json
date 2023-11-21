@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "api/*.php": {
+      "runtime": "vercel-php@0.6.0"
+    }
+  },
+  "routes": [
+    { "src": "/api/submit_score", "dest": "/api/submit_score.php" },
+    { "src": "/api/index", "dest": "/api/index.php" },
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/", "dest": "/api/index.php" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
