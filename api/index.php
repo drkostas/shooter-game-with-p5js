@@ -59,7 +59,7 @@
   }
   
   // Create highscores table
-  $slct = $pdo->prepare("SELECT * from (SELECT * from highscores order by score desc) x group by name order by score desc LIMIT 5");
+  $slct = $pdo->prepare("SELECT * from (SELECT * from highscores order by score desc) x group by name order by score desc LIMIT 100");
   $slct->execute();
   $scores = $slct->fetchAll();
 
@@ -70,9 +70,9 @@
             </tr>";
   foreach ($scores as $score) {
     $table .= "<tr>
-                  <td>".$score['name']."</td>
-                  <td>".$score['score']."</td>
-              </tr>";
+                    <td class='name-cell'>".$score['name']."</td>
+                    <td class='score-cell'>".$score['score']."</td>
+                </tr>";
   }
   $table .= "</table>";  
 ?>
@@ -101,6 +101,27 @@
           padding: 2px;
       }
 
+      table th {
+        font-size: 12px;
+      }
+
+      table td {
+        font-size: 10px;
+      }
+      table td.name-cell {
+        max-width: 200px; /* Adjust the max-width as needed */
+        white-space: nowrap; /* Keep the text in a single line */
+        overflow: hidden; /* Hide text that goes beyond the max-width */
+        text-overflow: ellipsis; /* Add an ellipsis at the end of the hidden text */
+      }
+
+      table td.score-cell {
+        max-width: 50px; /* Adjust the max-width as needed */
+        white-space: nowrap; /* Keep the text in a single line */
+        overflow: hidden; /* Hide text that goes beyond the max-width */
+        text-overflow: ellipsis; /* Add an ellipsis at the end of the hidden text */
+      }
+
       table tr:nth-child(even){background-color: #f2f2f2;}
 
       table tr:hover {background-color: #ddd;}
@@ -112,9 +133,27 @@
           background-color: #4CAF50;
           color: white;
       }
+
       canvas {
-        margin-top: 75px!important;
+          margin-top: 75px;
+          flex-grow: 1;
+          z-index: 2;
+          position: relative;
+          }
+
+      /* Adjust the leaderboard style */
+      #leaderboard {
+        /* max-width: 10%; Adjust the width as necessary */
+        position: relative;
+        right: 0; /* Keep a small distance from the right edge of the screen */
+        top: 10px; /* Adjust this value based on the position of the 'Monsters Killed' text */
+        z-index: 1; /* Ensure it's under the game canvas */
+        float: right;
+        margin-right: 1%;
+        padding: 1px;
+        height: calc(100vh - 280px);
       }
+
       /* The Modal (background) */
       .modal {
           display: none; /* Hidden by default */
@@ -220,23 +259,31 @@
 
   </head>
   <body>
-    <center>
-      <h2 style="display: inline-block;color: dodgerblue">RETRO SHOOTER</h2><br>
-      <b>Speed: </b> <b id="speed" style="color: red">1</b> 
-    </center>
-    <div style="display:inline;width: 100%;height: 250px;top: 10px;position: absolute;"> 
-      <div style="float: left;margin-left: 5%;color: forestgreen">
-        <h3>Move Mouse to aim.<br>Hit "s" to shoot.<br>Press ESC to pause and resume.</h3>
+    <div id="header">
+      <center>
+        <h2 style="display: inline-block;color: dodgerblue">RETRO SHOOTER</h2><br>
+        <b>Speed: </b> <b id="speed" style="color: red">1</b> 
+      </center>
+      <div style="display:inline;width: 100%;height: 250px;top: 10px;position: absolute;"> 
+        <div style="float: left;margin-left: 5%;color: forestgreen">
+          <h3>Move Mouse to aim.<br>Hit "s" to shoot.<br>Press ESC to pause and resume.</h3>
+        </div>
+        <div style="float: right;margin-right: 2%;border-style: ridge;padding: 1px;">
+          <h2> Monsters Killed: <b id="score" style="color:red">0</b></h2>
+        </div>
       </div>
-      <div style="float: right;margin-right: 2%;border-style: ridge;padding: 1px;">
-        <h2> Monsters Killed: <b id="score" style="color:red">0</b></h2>
-      </div>
-      <div style="float: right;margin-right: 5%;">
-        <b>Leaderboard</b>
-        <?=$table;?>
+
+      <div id="center-page">
+        <div id="game-container">
+        </div>
+        <div id="leaderboard">
+          <b>Leaderboard</b>
+          <?=$table;?>
+        </div>
       </div>
   </div>
-  <div style="position: absolute;bottom: 0;width: 100%;height:30px;background-color: #004080;">
+
+  <div id="footer" style="position: absolute;bottom: 0;width: 100%;height:30px;background-color: #004080;">
     <div style="position: absolute;bottom: 0;right: 35px;padding: 5px;color: #6d6ddf">
       Made by <span style="color: #91a8ee;">drkostas</span>. Source code available on <a href="https://github.com/drkostas/shooter-game-with-p5js" target="_blank" style="color: #999">GitHub</a>
     </div>
@@ -269,6 +316,39 @@
 
   </body>
   <script type="text/javascript">
+    function adjustTableHeight() {
+      // Get the leaderboard and footer elements
+      const leaderboard = document.getElementById('leaderboard');
+      const footer = document.getElementById('footer');
+
+      // Calculate the available height for the leaderboard table
+      const leaderboardTop = leaderboard.getBoundingClientRect().top;
+      const footerTop = footer.getBoundingClientRect().top;
+      const availableHeight = footerTop - leaderboardTop;
+
+      // Get the height of a single row - assumes all rows are of equal height
+      const rowHeight = leaderboard.querySelector('tr').clientHeight;
+
+      // Calculate the max number of rows that fit in the available space
+      const maxRows = Math.floor(availableHeight / rowHeight);
+
+      // Get all the rows in the leaderboard table
+      const rows = leaderboard.querySelectorAll('tr');
+
+      // Hide rows that don't fit in the available space
+      rows.forEach((row, index) => {
+        if (index > maxRows - 1) { // -1 because index is 0-based and we want to include the first row
+          row.style.display = 'none';
+        } else {
+          row.style.display = ''; // Ensure that the first maxRows are shown
+        }
+      });
+    }
+
+    // Run the function on load and on window resize
+    window.onload = adjustTableHeight;
+    window.onresize = adjustTableHeight;
+
     // Get the modal
     var modal = document.getElementById('submitScore');
 
@@ -300,5 +380,7 @@
       modal.style.display = "none";
       resumeGame();
     }
+
+    
   </script>
 </html>

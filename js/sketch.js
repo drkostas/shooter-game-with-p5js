@@ -27,7 +27,7 @@ function setup() {
   centerCanvas();
   noCursor();
   death.setVolume(0.4);
-  frameRate(40);
+  frameRate(60);
   pl = new player(canvasX - 30, canvasY / 2, 1);
   startTime = performance.now();
   lap = 1;
@@ -38,6 +38,7 @@ function themeSongLoaded() {
 }
 
 function draw() {
+
   if (!song.isLooping()) {
     return;
   }
@@ -51,6 +52,7 @@ function draw() {
     lap += 1;
     prevSec = seconds;
   }
+  
   pl.show(mouseY); // Show Player
   checkKilled(); // Checks the monsters that each bullet shot
   crashed = moveMonsters(crashed); // Moves monsters and checks the distance of the closest to the edge
@@ -103,7 +105,6 @@ function spawnMonster() {
     speedToShow = 1;
   }
   document.getElementById("speed").innerHTML = speedToShow;
-  // console.log("monster speed: ", speed);
   for (var i = 0; i < numOfMonsters; i++) {
     Monsters.push(new monster(0, random(50, canvasY - 50), scl, speed));
   }
@@ -132,17 +133,30 @@ function reset() {
 function writeScore() {
   document.getElementById("score").innerHTML = score;
 }
-
 function centerCanvas() {
-  canvasX = windowWidth - 100;
-  canvasY = windowHeight - 250;
-  scl = (windowWidth * 0.4) / 1900;
-  // console.log(scl);
+  // Use window.getComputedStyle to get the actual width of the leaderboard
+  let leaderboardStyle = window.getComputedStyle(document.getElementById('leaderboard'));
+  let leaderboardWidth = leaderboardStyle.width.replace('px', ''); // Remove 'px' to convert to number
+  leaderboardWidth = parseFloat(leaderboardWidth); // Convert the width to a number
+  
+  // Account for the margin of the leaderboard
+  let leaderboardMarginRight = leaderboardStyle.marginRight.replace('px', '');
+  leaderboardMarginRight = parseFloat(leaderboardMarginRight);
+
+  // Calculate the canvas width by subtracting the leaderboard width and its margin from the window width
+  canvasX = windowWidth - leaderboardWidth - leaderboardMarginRight - 10; // Subtract an extra 10px for potential scrollbar
+  canvasY = windowHeight - 280; // Height of the window minus the space for header and footer
+
+  // Adjust the scale based on the new width
+  scl = (canvasX * 0.4) / 1900; // You might need to adjust the scaling factor
+
+  // Create and position the canvas
   let cnv = createCanvas(canvasX, canvasY);
-  let x = (windowWidth - width) / 2;
-  let y = (windowHeight - height) / 2;
-  cnv.position(x, y);
-  bg.resize(canvasX, canvasY);
+  let x = (windowWidth - canvasX - leaderboardWidth - leaderboardMarginRight) / 2;
+  let y = (windowHeight - canvasY) / 2;
+  cnv.position(x, 75); // Position the canvas 75px from the top, as per your CSS
+  bg.resize(canvasX, canvasY); // Assuming 'bg' is a p5.js image that needs to be resized
+  cnv.parent("game-container"); // Make the canvas a child of the game-container div
 }
 
 function moveBackground() {
@@ -151,11 +165,9 @@ function moveBackground() {
     Math.round(
       map(lap, 0, 20, (4 * 1900) / windowWidth, (12 * 1900) / windowWidth) * 10
     ) / 10;
-  // console.log("BACKGROUND", speed);
   image(bg, scroll, 0);
   image(bg, scroll - bg.width, 0);
   scroll = scroll + speed;
-  // console.log("background speed: ", speed-(5*scl));
   if (scroll > bg.width) {
     scroll = 0;
   }
