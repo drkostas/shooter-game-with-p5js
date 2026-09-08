@@ -14,54 +14,52 @@
       }
   }
 
-  $host = getenv('DB_HOST');
-  $user = getenv('DB_USER');
-  $password = getenv('DB_PASSWORD');
-  $db_name = getenv('DB_NAME');
-  $db_name_statistics = getenv('DB_NAME_STATISTICS');
-  $tracking_page_name = getenv('TRACKING_PAGE_NAME');
-  $game_server = 'mysql:dbname=' . $db_name . ';host=' . $host;
-  $stats_server = 'mysql:dbname=' . $db_name_statistics . ';host=' . $host;
+  // The Amazon database this page used is being retired. Visits and the leaderboard now come
+  // from the collector at home over HTTPS, so this app holds no database credentials and a
+  // collector that is slow or down costs the page its scores, never an error page.
+  $collector = rtrim(getenv('COLLECTOR_URL') ?: '', '/');
+  $collector_token = getenv('COLLECTOR_TOKEN') ?: '';
+  $tracking_page_name = getenv('TRACKING_PAGE_NAME') ?: 'p5_shootergame';
 
-  // Connect to db
-  try {
-      $pdo = new PDO($game_server, $user, $password);
-  } catch (PDOException $e) {
-      echo 'Connection failed. Please try again later.';
-      exit; // Exit to avoid further script execution on connection failure
+  function collector_call($method, $path, $payload = null) {
+      $url = rtrim(getenv('COLLECTOR_URL') ?: '', '/');
+      $token = getenv('COLLECTOR_TOKEN') ?: '';
+      if (!$url || !$token || !function_exists('curl_init')) { return null; }
+      $ch = curl_init($url . $path);
+      $opts = array(
+          CURLOPT_RETURNTRANSFER => true,
+          CURLOPT_TIMEOUT_MS     => 1500,
+          CURLOPT_NOSIGNAL       => true,
+          CURLOPT_USERAGENT      => 'estate-collector-client/1.0',
+          CURLOPT_HTTPHEADER     => array('Content-Type: application/json',
+                                          'Authorization: Bearer ' . $token),
+      );
+      if ($method === 'POST') {
+          $opts[CURLOPT_POST] = true;
+          $opts[CURLOPT_POSTFIELDS] = $payload;
+      }
+      curl_setopt_array($ch, $opts);
+      $body = @curl_exec($ch);
+      $code = @curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      @curl_close($ch);
+      if ($code !== 200) { error_log('collector ' . $path . ' returned ' . $code); return null; }
+      return json_decode($body, true);
   }
 
-  try {
-      $pdo_statistics = new PDO($stats_server, $user, $password);
-  } catch (PDOException $e) {
-      echo 'Connection failed. Please try again later.';
-      exit; // Exit to avoid further script execution on connection failure
-  }
+  // Info about the visitor. On Vercel REMOTE_ADDR is the platform proxy, so the visitor address
+  // is the first hop of X-Forwarded-For.
+  $ref = $_SERVER['HTTP_REFERER'] ?? 'Unknown';
+  $fwd = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
+  $ip = trim(explode(',', $fwd)[0]) ?: ($_SERVER['HTTP_X_REAL_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? '');
+  $agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+  $domain = $ip ? (@gethostbyaddr($ip) ?: '') : '';
+  collector_call('POST', '/collect', json_encode(array(
+      'page' => $tracking_page_name, 'ref' => $ref, 'agent' => $agent,
+      'ip' => $ip, 'domain' => $domain)));
 
-  // Info about the visitor
-  if(isset($_SERVER['HTTP_REFERER'])) 
-  {
-    $ref=$_SERVER['HTTP_REFERER'];
-  }
-  else
-  {
-    $ref= "Unknown";
-  }
-  $agent=$_SERVER['HTTP_USER_AGENT'];
-  $ip=$_SERVER['REMOTE_ADDR'];
-  $domain = gethostbyaddr($_SERVER['REMOTE_ADDR']);
-  $vstr = $pdo_statistics->prepare("INSERT INTO tracking_info(tm, ref, agent, ip, tracking_page_name, domain)  VALUES(curdate(), :ref, :agent, :ip, :tracking_page_name, :domain)");
-  $vstr->execute(array(':ref'=>$ref, ':agent'=>$agent, ':ip'=>$ip, ':tracking_page_name'=>$tracking_page_name, ':domain'=>$domain));
-
-  if (!$vstr) {
-    echo "\nPDO::errorInfo():\n";
-    print_r($pdo_statistics->errorInfo());
-  }
-  
   // Create highscores table
-  $slct = $pdo->prepare("SELECT * from (SELECT * from highscores order by score desc) x group by name order by score desc LIMIT 100");
-  $slct->execute();
-  $scores = $slct->fetchAll();
+  $board = collector_call('GET', '/highscores');
+  $scores = ($board && isset($board['scores'])) ? $board['scores'] : array();
 
   $table = "<table style='border-style: ridge;padding: 1px;''>
             <tr>
