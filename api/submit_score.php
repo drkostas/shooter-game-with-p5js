@@ -13,41 +13,45 @@
 		}
 	}
 
-	$host = getenv('DB_HOST');
-	$user = getenv('DB_USER');
-	$password = getenv('DB_PASSWORD');
-	$db_name = getenv('DB_NAME');
-	$game_server = 'mysql:dbname=' . $db_name . ';host=' . $host;
+	// Scores go to the collector at home over HTTPS. No database credentials live in this app.
+	$collector = rtrim(getenv('COLLECTOR_URL') ?: '', '/');
+	$token = getenv('COLLECTOR_TOKEN') ?: '';
 
-	try {
-	$pdo = new PDO($game_server, $user, $password);
-	// It's a good practice to set the error mode to exception
-	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	} catch (PDOException $e) {
-	// Log the error internally instead of echoing it
-	error_log($e->getMessage());
-	echo 'Connection failed. Please try again later.';
-	exit; // Exit to avoid further script execution on connection failure
+	$name = $_POST['name'] ?? 'defaultName';
+	$score = filter_var($_POST['score'] ?? 0, FILTER_VALIDATE_INT);
+	$name = substr(strip_tags($name), 0, 80);
+
+	if ($score === false || $score < 0) {
+		http_response_code(400);
+		echo 'Invalid score.';
+		return;
+	}
+	if (!$collector || !$token || !function_exists('curl_init')) {
+		error_log('collector not configured');
+		echo 'Error occurred while submitting the score.';
+		return;
 	}
 
-	// Assuming $name and $score come from POST request
-	$name = $_POST['name'] ?? 'defaultName'; // Replace 'defaultName' with a suitable default
-	$score = $_POST['score'] ?? 0;
+	$ch = curl_init($collector . '/highscores');
+	curl_setopt_array($ch, array(
+		CURLOPT_POST           => true,
+		CURLOPT_POSTFIELDS     => json_encode(array('name' => $name, 'score' => $score)),
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_TIMEOUT_MS     => 2500,
+		CURLOPT_NOSIGNAL       => true,
+		CURLOPT_USERAGENT      => 'estate-collector-client/1.0',
+		CURLOPT_HTTPHEADER     => array('Content-Type: application/json',
+		                                'Authorization: Bearer ' . $token),
+	));
+	$body = @curl_exec($ch);
+	$code = @curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	@curl_close($ch);
 
-	// Validate and sanitize inputs
-	$name = strip_tags($name); // or htmlspecialchars($name)
-	$score = filter_var($score, FILTER_VALIDATE_INT);
-
-	$insrt = $pdo->prepare("INSERT INTO highscores (name, score) VALUES (:nm, :scr)");
-	$insrt->bindParam(':nm', $name);
-	$insrt->bindParam(':scr', $score);
-
-	try {
-	$insrt->execute();
-	echo "success";
-	} catch (PDOException $e) {
-	// Log the error internally instead of echoing it
-	error_log($e->getMessage());
-	echo 'Error occurred while submitting the score.';
+	if ($code === 200) {
+		echo "success";
+	} else {
+		error_log('collector highscore submit returned ' . $code);
+		echo 'Error occurred while submitting the score.';
 	}
+
 ?>
