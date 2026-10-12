@@ -6,6 +6,7 @@
   },
   "routes": [
     { "src": "/api/submit_score", "dest": "/api/submit_score.php" },
+    { "src": "/api/client-error", "dest": "/api/client_error.php" },
     { "src": "/api/index", "dest": "/api/index.php" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/", "dest": "/api/index.php" },
